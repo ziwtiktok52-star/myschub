@@ -38,7 +38,7 @@ apply.BackgroundColor3, apply.TextColor3 = Color3.new(1,0,0), Color3.new(1,1,1)
 Instance.new("UICorner", apply)
 
 apply.MouseButton1Click:Connect(function()
-    if box.Text == "ziwaganteng" then
+    if box.Text == "ziwa" then
         keyF:Destroy()
         f.Visible = true
     else
