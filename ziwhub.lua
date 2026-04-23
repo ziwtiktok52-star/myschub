@@ -9,10 +9,6 @@ local GS = game:GetService("GuiService")
 local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, ams = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
 local ESP_Cache = {}
 
--- Raycast Params (Optimasi Wallcheck)
-local wallParams = RaycastParams.new()
-wallParams.FilterType = Enum.RaycastFilterType.Blacklist
-
 -- [ UI PARENTING ]
 local sg = Instance.new("ScreenGui", game:GetService("CoreGui"):FindFirstChild("RobloxGui") or p:WaitForChild("PlayerGui"))
 sg.Name = "ZieHubV1"; sg.ResetOnSpawn = false
@@ -23,14 +19,44 @@ f.Active, f.Draggable = true, true; Instance.new("UICorner", f); Instance.new("U
 local title = Instance.new("TextLabel", f); title.Size, title.Position, title.BackgroundTransparency = UDim2.new(1, 0, 0, 40), UDim2.new(0, 0, 0, 10), 1
 title.Text, title.TextColor3, title.TextSize, title.Font = "ZieHubV1", Color3.new(1,0,0), 25, 3
 
+-- [ KEY SYSTEM UI ]
+local keyF = Instance.new("Frame", sg)
+keyF.Size, keyF.Position, keyF.BackgroundColor3 = UDim2.new(0, 300, 0, 180), UDim2.new(0.5, -150, 0.5, -90), Color3.fromRGB(20,20,20)
+keyF.Visible = false; Instance.new("UICorner", keyF); Instance.new("UIStroke", keyF).Color = Color3.new(1,0,0)
+
+local keyT = Instance.new("TextLabel", keyF)
+keyT.Size, keyT.Position, keyT.Text, keyT.TextColor3, keyT.BackgroundTransparency = UDim2.new(1,0,0,40), UDim2.new(0,0,0,10), "ENTER PASSWORD", Color3.new(1,1,1), 1
+
+local box = Instance.new("TextBox", keyF)
+box.Size, box.Position, box.Text = UDim2.new(0.8,0,0,35), UDim2.new(0.1,0,0.35,0), ""
+box.BackgroundColor3, box.PlaceholderText, box.TextColor3 = Color3.new(0.1,0.1,0.1), "Password...", Color3.new(1,1,1)
+Instance.new("UICorner", box)
+
+local apply = Instance.new("TextButton", keyF)
+apply.Size, apply.Position, apply.Text = UDim2.new(0.8,0,0,35), UDim2.new(0.1,0,0.65,0), "APPLY"
+apply.BackgroundColor3, apply.TextColor3 = Color3.new(1,0,0), Color3.new(1,1,1)
+Instance.new("UICorner", apply)
+
+apply.MouseButton1Click:Connect(function()
+    if box.Text == "ziwaganteng" then
+        keyF:Destroy()
+        f.Visible = true
+    else
+        box.Text = ""
+        box.PlaceholderText = "WRONG!"
+        task.wait(1)
+        box.PlaceholderText = "Password..."
+    end
+end)
+
+-- [ TOGGLE SYSTEM ]
 local min = Instance.new("TextButton", sg); min.Size, min.Text, min.Visible, min.Draggable = UDim2.new(0,45,0,45), "Z", false, true
 min.Position, min.BackgroundColor3, min.TextColor3 = UDim2.new(0.1,0,0.2,0), Color3.new(0,0,0), Color3.new(1,0,0)
 Instance.new("UICorner", min, UDim.new(1,0)); Instance.new("UIStroke", min).Color = Color3.new(1,0,0)
-
-local function tgl() f.Visible, min.Visible = not f.Visible, f.Visible end
+local function tgl() if not sg:FindFirstChild("Frame") then return end f.Visible, min.Visible = not f.Visible, f.Visible end
 min.MouseButton1Click:Connect(tgl)
 
--- [ UPSIDE DOWN LOGIC ]
+-- [ LOGICS ]
 local function toggleBackwards()
     bkwd = not bkwd
     local char = p.Character
@@ -55,15 +81,13 @@ end
 
 local bA = btn("Aimbot: OFF", UDim2.new(0.025,0,0.12,0), function() aim = not aim end)
 local bW = btn("Wallcheck: OFF", UDim2.new(0.025,0,0.18,0), function() wc = not wc end)
-local bF = btn("FOV Circle: OFF", UDim2.new(0.025,0,0.24,0), function() fov = not fov end)
+local bF = btn("FOV: OFF", UDim2.new(0.025,0,0.24,0), function() fov = not fov end)
 local bAf = btn("Anti-AFK: OFF", UDim2.new(0.025,0,0.30,0), function() afk = not afk end)
 local bBk = btn("UpsideDown (J): OFF", UDim2.new(0.025,0,0.36,0), toggleBackwards)
-
 local bE = btn("ESP Box: OFF", UDim2.new(0.525,0,0.12,0), function() esp = not esp end)
 local bT = btn("Tracers: OFF", UDim2.new(0.525,0,0.18,0), function() trc = not trc end)
 local bN = btn("ESP Name: OFF", UDim2.new(0.525,0,0.24,0), function() nm = not nm end)
 local bH = btn("ESP Health: OFF", UDim2.new(0.525,0,0.30,0), function() hp = not hp end)
-
 local bFps = btn("Boost FPS: OFF", UDim2.new(0.525,0,0.65,0), function() 
     fps = not fps 
     if fps then 
@@ -73,39 +97,28 @@ local bFps = btn("Boost FPS: OFF", UDim2.new(0.525,0,0.65,0), function()
         end 
     end 
 end)
-
 local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function() dw = not dw end)
-
--- FITUR AutoMSv1
-local bAms = btn("AutoMSv1: OFF", UDim2.new(0.525,0,0.71,0), function()
-    ams = not ams
-    if ams then
-        local success, err = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/rexxymayor-ai/SCRIPTtt/refs/heads/main/script%20automs", true))()
-        end)
-        if not success then warn("ZieHub Error: " .. err) end
-    end
+local bAms = btn("AutoMSv1: OFF", UDim2.new(0.525,0,0.71,0), function() 
+    ams = not ams 
+    if ams then pcall(function() loadstring(game:HttpGet("https://githubusercontent.com", true))() end) end 
 end)
-
 btn("X", UDim2.new(1,-35,0,5), tgl).Size = UDim2.new(0,30,0,30)
 
--- [ SLIDER SYSTEM ]
+-- [ SLIDERS ]
 local function sld(txt, pos)
     local l = Instance.new("TextLabel", f); l.Size, l.Position, l.Text = UDim2.new(0.45,0,0,20), UDim2.new(0.025,0,pos,0), txt
     l.TextColor3, l.BackgroundTransparency, l.TextSize = Color3.new(1,1,1), 1, 12
     local bg = Instance.new("Frame", f); bg.Size, bg.Position, bg.BackgroundColor3 = UDim2.new(0.4,0,0,6), UDim2.new(0.05,0,pos+0.05,0), Color3.new(0.2,0.2,0.2)
     local bar = Instance.new("Frame", bg); bar.Size, bar.BackgroundColor3 = UDim2.new(0.5,0,1,0), Color3.new(1,0,0)
     local d = Instance.new("TextButton", bar); d.Size, d.Text, d.BackgroundTransparency = UDim2.new(1,0,1,0), "", 1
-    Instance.new("UICorner", bg); Instance.new("UICorner", bar)
-    return l, bg, bar, d
+    Instance.new("UICorner", bg); Instance.new("UICorner", bar); return l, bg, bar, d
 end
-
 local sL, sBg, sBar, sD = sld("Smooth: 0.1", 0.44)
 local fL, fBg, fBar, fD = sld("FOV Size: 150", 0.54)
 sD.MouseButton1Down:Connect(function() drag = true end)
 fD.MouseButton1Down:Connect(function() d_fov = true end)
 
--- [ ESP CREATION ]
+-- [ ESP SYSTEM ]
 local function createEsp(plr)
     if plr == p then return end
     local components = {box = Drawing.new("Square"), line = Drawing.new("Line"), name = Drawing.new("Text"), health = Drawing.new("Line")}
@@ -113,23 +126,17 @@ local function createEsp(plr)
     components.box.Color, components.line.Color = Color3.new(1, 1, 0), Color3.new(1, 1, 0)
     ESP_Cache[plr] = components
 end
+game.Players.PlayerRemoving:Connect(function(plr) if ESP_Cache[plr] then for _, obj in pairs(ESP_Cache[plr]) do obj:Remove() end ESP_Cache[plr] = nil end end)
 
-game.Players.PlayerRemoving:Connect(function(plr)
-    if ESP_Cache[plr] then for _, obj in pairs(ESP_Cache[plr]) do obj:Remove() end ESP_Cache[plr] = nil end
-end)
-
--- [ CORE RENDERING ]
+-- [ RENDER ]
+local circle = Drawing.new("Circle"); circle.Thickness, circle.NumSides, circle.Color = 1, 100, Color3.new(1,0,0)
 run.RenderStepped:Connect(function()
     local center = Vector2.new(cam.ViewportSize.X / 2, (cam.ViewportSize.Y - GS:GetGuiInset().Y) / 2 + GS:GetGuiInset().Y)
-    
-    -- UI Sync
+    circle.Visible, circle.Position, circle.Radius = fov, center, fov_r
     bA.Text="Aimbot: "..(aim and "ON" or "OFF"); bW.Text="Wallcheck: "..(wc and "ON" or "OFF"); bF.Text="FOV: "..(fov and "ON" or "OFF")
     bAf.Text="Anti-AFK: "..(afk and "ON" or "OFF"); bBk.Text="UpsideDown: "..(bkwd and "ON" or "OFF")
     bE.Text="ESP Box: "..(esp and "ON" or "OFF"); bT.Text="Tracers: "..(trc and "ON" or "OFF")
     bN.Text="ESP Name: "..(nm and "ON" or "OFF"); bH.Text="ESP Health: "..(hp and "ON" or "OFF")
-    bFps.Text="Boost FPS: "..(fps and "ON" or "OFF"); bDw.Text="Del Wall (K): "..(dw and "ON" or "OFF")
-    bAms.Text="AutoMSv1: "..(ams and "ON" or "OFF")
-
     if drag then
         local pct = math.clamp((UIS:GetMouseLocation().X - sBg.AbsolutePosition.X)/sBg.AbsoluteSize.X, 0, 1)
         sBar.Size, smooth = UDim2.new(pct,0,1,0), 0.01 + (pct * 0.9); sL.Text = string.format("Smooth: %.2f", smooth)
@@ -138,25 +145,32 @@ run.RenderStepped:Connect(function()
         local pct = math.clamp((UIS:GetMouseLocation().X - fBg.AbsolutePosition.X)/fBg.AbsoluteSize.X, 0, 1)
         fBar.Size, fov_r = UDim2.new(pct,0,1,0), math.floor(pct * 500); fL.Text = "FOV Size: "..fov_r
     end
-
-    -- ESP Render & Aimbot Logic (Sama seperti sebelumnya)
-    -- [Bagian ini tetap ada untuk menjalankan fitur Aimbot & ESP kamu]
-end)
-
--- [ INPUTS & INITIALIZATION ]
-UIS.InputBegan:Connect(function(i, g)
-    if not g then
-        if i.KeyCode == Enum.KeyCode.P then tgl() end
-        if i.KeyCode == Enum.KeyCode.J then toggleBackwards() end
-        if i.KeyCode == Enum.KeyCode.K and dw then
-            local m = p:GetMouse(); if m.Target then m.Target:Destroy() end
+    -- ESP Rendering
+    for plr, v in pairs(ESP_Cache) do
+        local char = plr.Character
+        if char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.Health > 0 then
+            local pos, vis = cam:WorldToViewportPoint(char.HumanoidRootPart.Position)
+            if vis then
+                local h = 2000 / pos.Z; local w = h / 1.5
+                v.box.Visible, v.box.Size, v.box.Position = esp, Vector2.new(w, h), Vector2.new(pos.X - w/2, pos.Y - h/2)
+                v.line.Visible, v.line.From, v.line.To = trc, Vector2.new(cam.ViewportSize.X/2, cam.ViewportSize.Y), Vector2.new(pos.X, pos.Y)
+                v.name.Visible, v.name.Text, v.name.Position = nm, plr.Name, Vector2.new(pos.X, pos.Y - h/2 - 20)
+            else v.box.Visible, v.line.Visible, v.name.Visible = false, false, false end
+        else v.box.Visible, v.line.Visible, v.name.Visible = false, false, false end
+    end
+    -- Aimbot Logic
+    if aim then
+        local target, close = nil, (fov and fov_r or 1000)
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= p and v.Character and v.Character:FindFirstChild("Head") then
+                local pos, vis = cam:WorldToViewportPoint(v.Character.Head.Position)
+                local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                if vis and dist < close then target = v.Character.Head; close = dist end
+            end
         end
+        if target then cam.CFrame = cam.CFrame:Lerp(CFrame.lookAt(cam.CFrame.Position, target.Position), smooth) end
     end
 end)
-UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag, d_fov = false end end)
-
-for _, v in pairs(game.Players:GetPlayers()) do createEsp(v) end
-game.Players.PlayerAdded:Connect(createEsp)
 
 -- [ LOADER ]
 local ldF = Instance.new("Frame", sg); ldF.Size, ldF.Position = UDim2.new(0,250,0,80), UDim2.new(0.5,-125,0.5,-40)
@@ -164,5 +178,17 @@ ldF.BackgroundColor3 = Color3.new(0,0,0); Instance.new("UICorner", ldF); Instanc
 local ldB = Instance.new("Frame", ldF); ldB.Size, ldB.Position = UDim2.new(0,0,0,5), UDim2.new(0.1,0,0.7,0); ldB.BackgroundColor3 = Color3.new(1,0,0)
 task.spawn(function()
     for i=0,100,5 do ldB.Size=UDim2.new(i/100*0.8,0,0,5) task.wait(0.05) end
-    ldF:Destroy(); f.Visible=true
+    ldF:Destroy(); keyF.Visible = true
 end)
+
+-- [ INPUT ]
+UIS.InputBegan:Connect(function(i, g)
+    if not g then
+        if i.KeyCode == Enum.KeyCode.P then tgl() end
+        if i.KeyCode == Enum.KeyCode.J then toggleBackwards() end
+        if i.KeyCode == Enum.KeyCode.K and dw then local m = p:GetMouse(); if m.Target then m.Target:Destroy() end end
+    end
+end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag, d_fov = false end end)
+for _, v in pairs(game.Players:GetPlayers()) do createEsp(v) end
+game.Players.PlayerAdded:Connect(createEsp)
