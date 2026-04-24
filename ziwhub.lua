@@ -13,7 +13,7 @@ local premiumKeys = {
 }
 
 -- Variabel Fitur
-local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, ams = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
+local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, masak = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
 local ESP_Cache = {}
 
 -- [ UI PARENTING ]
@@ -124,10 +124,10 @@ local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function()
     delBtn.Visible = dw
 end)
 
--- Fitur AutoMsV1
-local bAms = btn("AutoMsV1: OFF", UDim2.new(0.525,0,0.71,0), function()
-    ams = not ams
-    if ams then
+-- FITUR AUTOMASAK
+local bMasak = btn("AutoMasak: OFF", UDim2.new(0.525,0,0.71,0), function()
+    masak = not masak
+    if masak then
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/rexxymayor-ai/SCRIPTtt/refs/heads/main/script%20automs", true))()
         end)
@@ -168,15 +168,15 @@ run.RenderStepped:Connect(function()
     bF.Text="FOV: "..(fov and "ON" or "OFF"); bAf.Text="Anti-AFK: "..(afk and "ON" or "OFF")
     bE.Text="ESP Box: "..(esp and "ON" or "OFF"); bH.Text="ESP Health: "..(hp and "ON" or "OFF")
     bDw.Text="Del Wall (K): "..(dw and "ON" or "OFF")
-    bAms.Text="AutoMsV1: "..(ams and "ON" or "OFF")
+    bMasak.Text="AutoMasak: "..(masak and "ON" or "OFF")
 
     if drag then
         local pct = math.clamp((UIS:GetMouseLocation().X - sBg.AbsolutePosition.X)/sBg.AbsoluteSize.X, 0, 1)
-        sBar.Size, smooth = UDim2.new(pct,0,1,0), 0.01 + (pct * 0.9); sL.Text = string.format("Smooth: %.2f", smooth)
+        sBar.Size, smooth = UDim2.new(pct,0,1,0), (pct * 0.9) + 0.01; sL.Text = string.format("Smooth: %.2f", smooth)
     end
     if d_fov then
         local pct = math.clamp((UIS:GetMouseLocation().X - fBg.AbsolutePosition.X)/fBg.AbsoluteSize.X, 0, 1)
-        fBar.Size, fov_r = UDim2.new(pct,0,1,0), math.floor(pct * 500); fL.Text = "FOV Size: "..fov_r
+        fBar.Size, fov_r = UDim2.new(pct,0,1,0), math.floor(pct * 800); fL.Text = "FOV Size: "..fov_r
     end
 
     for plr, v in pairs(ESP_Cache) do
@@ -198,24 +198,29 @@ run.RenderStepped:Connect(function()
     end
 
     if aim then
-        local target, close = nil, (fov and fov_r or 1000)
+        local target, close = nil, (fov and fov_r or 2000)
         for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= p and v.Character and v.Character:FindFirstChild("Head") and v.Character.Humanoid.Health > 0 then
-                local headPos = v.Character.Head.Position
-                local pos, vis = cam:WorldToViewportPoint(headPos)
-                if vis then
-                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
-                    if dist < close then
-                        if wc then
-                            local ray = cam:GetPartsObscuringTarget({cam.CFrame.Position, headPos}, {p.Character, v.Character})
-                            if #ray > 0 then continue end
+            if v ~= p and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+                local part = v.Character:FindFirstChild("Head") or v.Character:FindFirstChild("HumanoidRootPart")
+                if part then
+                    local pos, vis = cam:WorldToViewportPoint(part.Position)
+                    if vis then
+                        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                        if dist < close then
+                            if wc then
+                                local ray = cam:GetPartsObscuringTarget({cam.CFrame.Position, part.Position}, {p.Character, v.Character})
+                                if #ray > 0 then continue end
+                            end
+                            target = part; close = dist
                         end
-                        target = v.Character.Head; close = dist
                     end
                 end
             end
         end
-        if target then cam.CFrame = cam.CFrame:Lerp(CFrame.lookAt(cam.CFrame.Position, target.Position), smooth) end
+        if target then
+            local targetPos = CFrame.new(cam.CFrame.Position, target.Position)
+            cam.CFrame = cam.CFrame:Lerp(targetPos, 1 - smooth) 
+        end
     end
 end)
 
