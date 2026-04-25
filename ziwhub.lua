@@ -1,9 +1,13 @@
--- [[ ZieHubV1 - ULTIMATE FULL VERSION FIXED & OPTIMIZED ]]
+-- [[ ZieHubV1 - CLEAN VERSION (NO AUTO MASAK) ]]
 local p = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local cam = workspace.CurrentCamera
 local GS = game:GetService("GuiService")
+
+-- Bersihkan GUI lama agar tidak tumpang tindih
+local oldGui = game:GetService("CoreGui"):FindFirstChild("ZieHubV1")
+if oldGui then oldGui:Destroy() end
 
 -- [[ DAFTAR PASSWORD PREMIUM (WHITELIST) ]]
 local premiumKeys = {
@@ -13,7 +17,7 @@ local premiumKeys = {
 }
 
 -- Variabel Fitur
-local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, masak = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
+local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false
 local ESP_Cache = {}
 
 -- [ UI PARENTING ]
@@ -47,7 +51,7 @@ title.Text, title.TextColor3, title.TextSize, title.Font = "ZieHubV1", Color3.ne
 local cred = Instance.new("TextLabel", f)
 cred.Size, cred.Position = UDim2.new(1, 0, 0, 80), UDim2.new(0, 0, 1, -90)
 cred.BackgroundTransparency, cred.TextColor3, cred.TextSize, cred.Font = 1, Color3.new(1,0,0), 14, 3
-cred.Text = "Credit by ziewio4\nNomor WA (For Buy Premium SC): 083121936734\nTiktok: ziewio4"
+cred.Text = "Credit by ziewio4\nNomor WA: 083121936734\nTiktok: ziewio4"
 
 -- [ KEY SYSTEM UI ]
 local keyF = Instance.new("Frame", sg)
@@ -124,15 +128,13 @@ local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function()
     delBtn.Visible = dw
 end)
 
--- FITUR AUTOMASAK
-local bMasak = btn("AutoMasak: OFF", UDim2.new(0.525,0,0.71,0), function()
-    masak = not masak
-    if masak then
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/rexxymayor-ai/SCRIPTtt/refs/heads/main/script%20automs", true))()
-        end)
-    end
+-- [[ FITUR BARU AutoMSv1X ]]
+local bMSX = btn("AutoMSv1X: EXECUTE", UDim2.new(0.525,0,0.71,0), function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ziwtiktok52-star/ziwhubmssss/refs/heads/main/ggs"))()
+    end)
 end)
+bMSX.BackgroundColor3 = Color3.fromRGB(0, 100, 0) -- Warna Hijau Gelap biar beda
 
 btn("X", UDim2.new(1,-35,0,5), tgl).Size = UDim2.new(0,30,0,30)
 
@@ -168,7 +170,6 @@ run.RenderStepped:Connect(function()
     bF.Text="FOV: "..(fov and "ON" or "OFF"); bAf.Text="Anti-AFK: "..(afk and "ON" or "OFF")
     bE.Text="ESP Box: "..(esp and "ON" or "OFF"); bH.Text="ESP Health: "..(hp and "ON" or "OFF")
     bDw.Text="Del Wall (K): "..(dw and "ON" or "OFF")
-    bMasak.Text="AutoMasak: "..(masak and "ON" or "OFF")
 
     if drag then
         local pct = math.clamp((UIS:GetMouseLocation().X - sBg.AbsolutePosition.X)/sBg.AbsoluteSize.X, 0, 1)
