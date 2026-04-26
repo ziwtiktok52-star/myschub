@@ -5,7 +5,7 @@ local run = game:GetService("RunService")
 local cam = workspace.CurrentCamera
 local GS = game:GetService("GuiService")
 
--- Bersihkan GUI lama agar tidak tumpang tindih
+-- Bersihkan GUI lama agar tidak tumpang tidak
 local oldGui = game:GetService("CoreGui"):FindFirstChild("ZieHubV1")
 if oldGui then oldGui:Destroy() end
 
@@ -18,6 +18,7 @@ local premiumKeys = {
 
 -- Variabel Fitur
 local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, showFr = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
+local tpMati = false 
 local ESP_Cache = {}
 local friends = {}
 
@@ -129,6 +130,32 @@ local function toggleBackwards()
     end
 end
 
+-- FITUR: TeleportDs[MATI] Logic (FIXED TELEPORT)
+local function doTpMati()
+    if tpMati then return end 
+    tpMati = true
+    
+    local char = p.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0 
+        
+        task.wait(20) 
+        
+        local newChar = p.CharacterAdded:Wait() 
+        local hrp = newChar:WaitForChild("HumanoidRootPart", 10)
+        
+        if hrp then
+            task.wait(0.5) 
+            hrp.CFrame = CFrame.new(730.97, 3.71, 440.70) 
+            
+            hrp.Anchored = true 
+            task.wait(1)
+            hrp.Anchored = false
+        end
+    end
+    tpMati = false
+end
+
 local function btn(txt, pos, cb)
     local b = Instance.new("TextButton", f); b.Size, b.Position, b.Text = UDim2.new(0.45,0,0,30), pos, txt
     b.BackgroundColor3, b.TextColor3, b.Font, b.TextSize = Color3.fromRGB(30,30,30), Color3.new(1,1,1), 3, 12
@@ -155,7 +182,8 @@ end)
 
 local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function() dw = not dw; delBtn.Visible = dw end)
 
--- POSISI BARU: Friendlist diatas Boost FPS
+-- POSISI: TeleportDs[MATI] di atas Friendlist
+local bTpMati = btn("TeleportDs[MATI]: OFF", UDim2.new(0.525,0,0.53,0), doTpMati) 
 local bFrOn = btn("Friendlist: OFF", UDim2.new(0.525,0,0.59,0), function() showFr = not showFr; frFrame.Visible = showFr; if showFr then updateFriendList() end end)
 
 local bFps = btn("Boost FPS: OFF", UDim2.new(0.525,0,0.65,0), function() 
@@ -209,6 +237,7 @@ run.RenderStepped:Connect(function()
     bDw.Text="Del Wall (K): "..(dw and "ON" or "OFF")
     bFrOn.Text="Friendlist: "..(showFr and "ON" or "OFF")
     bFps.Text="Boost FPS: "..(fps and "ON" or "OFF")
+    bTpMati.Text="TeleportDs[MATI]: "..(tpMati and "ON" or "OFF")
 
     if drag then
         local pct = math.clamp((UIS:GetMouseLocation().X - sBg.AbsolutePosition.X)/sBg.AbsoluteSize.X, 0, 1)
