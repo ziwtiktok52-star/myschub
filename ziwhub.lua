@@ -17,8 +17,9 @@ local premiumKeys = {
 }
 
 -- Variabel Fitur
-local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false
+local aim, fov, esp, trc, nm, hp, smooth, fov_r, drag, d_fov, wc, afk, fps, dw, bkwd, showFr = false, false, false, false, false, false, 0.1, 150, false, false, false, false, false, false, false, false
 local ESP_Cache = {}
+local friends = {}
 
 -- [ UI PARENTING ]
 local sg = Instance.new("ScreenGui", game:GetService("CoreGui"):FindFirstChild("RobloxGui") or p:WaitForChild("PlayerGui"))
@@ -48,10 +49,43 @@ f.Active, f.Draggable = true, true; Instance.new("UICorner", f); Instance.new("U
 local title = Instance.new("TextLabel", f); title.Size, title.Position, title.BackgroundTransparency = UDim2.new(1, 0, 0, 40), UDim2.new(0, 0, 0, 10), 1
 title.Text, title.TextColor3, title.TextSize, title.Font = "ZieHubV1", Color3.new(1,0,0), 25, 3
 
+-- [ SIMPLE FRIENDLIST UI ]
+local frFrame = Instance.new("Frame", f)
+frFrame.Size, frFrame.Position = UDim2.new(0.95, 0, 0.22, 0), UDim2.new(0.025, 0, 0.77, 0)
+frFrame.BackgroundColor3, frFrame.BackgroundTransparency = Color3.new(0,0,0), 0.3
+frFrame.Visible = false
+Instance.new("UICorner", frFrame)
+
+local frScroll = Instance.new("ScrollingFrame", frFrame)
+frScroll.Size, frScroll.Position, frScroll.BackgroundTransparency = UDim2.new(1, -10, 1, -10), UDim2.new(0, 5, 0, 5), 1
+frScroll.CanvasSize, frScroll.ScrollBarThickness = UDim2.new(0, 0, 0, 0), 2
+local frListLayout = Instance.new("UIListLayout", frScroll)
+frListLayout.Padding = UDim.new(0, 3)
+
+local function updateFriendList()
+    for _, child in pairs(frScroll:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= p then
+            local b = Instance.new("TextButton", frScroll)
+            b.Size, b.Text = UDim2.new(1, 0, 0, 20), " " .. plr.Name
+            b.BackgroundColor3 = friends[plr.Name] and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(30, 30, 30)
+            b.TextColor3 = friends[plr.Name] and Color3.new(0.6, 0.6, 0.6) or Color3.new(1, 1, 1)
+            b.Font, b.TextSize, b.TextXAlignment = 3, 13, Enum.TextXAlignment.Left
+            Instance.new("UICorner", b, UDim.new(0, 4))
+            b.MouseButton1Click:Connect(function()
+                friends[plr.Name] = not friends[plr.Name]
+                b.BackgroundColor3 = friends[plr.Name] and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(30, 30, 30)
+                b.TextColor3 = friends[plr.Name] and Color3.new(0.6, 0.6, 0.6) or Color3.new(1, 1, 1)
+            end)
+        end
+    end
+    frScroll.CanvasSize = UDim2.new(0, 0, 0, frListLayout.AbsoluteContentSize.Y)
+end
+
 local cred = Instance.new("TextLabel", f)
-cred.Size, cred.Position = UDim2.new(1, 0, 0, 80), UDim2.new(0, 0, 1, -90)
-cred.BackgroundTransparency, cred.TextColor3, cred.TextSize, cred.Font = 1, Color3.new(1,0,0), 14, 3
-cred.Text = "Credit by ziewio4\nNomor WA: 083121936734\nTiktok: ziewio4"
+cred.Size, cred.Position = UDim2.new(1, 0, 0, 20), UDim2.new(0, 0, 1, -15)
+cred.BackgroundTransparency, cred.TextColor3, cred.TextSize, cred.Font = 1, Color3.new(0.5,0,0), 10, 3
+cred.Text = "Credit by ziewio4 | WA: 083121936734"
 
 -- [ KEY SYSTEM UI ]
 local keyF = Instance.new("Frame", sg)
@@ -101,17 +135,28 @@ local function btn(txt, pos, cb)
     b.MouseButton1Click:Connect(cb); Instance.new("UICorner", b); return b
 end
 
--- Layout Tombol
+-- Tombol Kiri
 local bA = btn("Aimbot: OFF", UDim2.new(0.025,0,0.12,0), function() aim = not aim end)
 local bW = btn("Wallcheck: OFF", UDim2.new(0.025,0,0.18,0), function() wc = not wc end)
 local bF = btn("FOV Circle: OFF", UDim2.new(0.025,0,0.24,0), function() fov = not fov end)
 local bAf = btn("Anti-AFK: OFF", UDim2.new(0.025,0,0.30,0), function() afk = not afk end)
 local bBk = btn("UpsideDown (J): OFF", UDim2.new(0.025,0,0.36,0), toggleBackwards)
 
+-- Tombol Kanan
 local bE = btn("ESP Box: OFF", UDim2.new(0.525,0,0.12,0), function() esp = not esp end)
 local bT = btn("Tracers: OFF", UDim2.new(0.525,0,0.18,0), function() trc = not trc end)
 local bN = btn("ESP Name: OFF", UDim2.new(0.525,0,0.24,0), function() nm = not nm end)
 local bH = btn("ESP Health: OFF", UDim2.new(0.525,0,0.30,0), function() hp = not hp end)
+
+-- Loader & Utilitas
+local bVF = btn("Vehicle Fly", UDim2.new(0.025,0,0.65,0), function()
+    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ziwtiktok52-star/ziwhub-project/refs/heads/main/vecichle"))() end)
+end)
+
+local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function() dw = not dw; delBtn.Visible = dw end)
+
+-- POSISI BARU: Friendlist diatas Boost FPS
+local bFrOn = btn("Friendlist: OFF", UDim2.new(0.525,0,0.59,0), function() showFr = not showFr; frFrame.Visible = showFr; if showFr then updateFriendList() end end)
 
 local bFps = btn("Boost FPS: OFF", UDim2.new(0.525,0,0.65,0), function() 
     fps = not fps
@@ -123,18 +168,10 @@ local bFps = btn("Boost FPS: OFF", UDim2.new(0.525,0,0.65,0), function()
     end
 end)
 
-local bDw = btn("Del Wall (K): OFF", UDim2.new(0.025,0,0.71,0), function() 
-    dw = not dw 
-    delBtn.Visible = dw
+local bMSX = btn("AutoMSv1X", UDim2.new(0.525,0,0.71,0), function()
+    pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/ziwtiktok52-star/ziwhubmssss/refs/heads/main/ggs"))() end)
 end)
-
--- [[ FITUR BARU AutoMSv1X ]]
-local bMSX = btn("AutoMSv1X: EXECUTE", UDim2.new(0.525,0,0.71,0), function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ziwtiktok52-star/ziwhubmssss/refs/heads/main/ggs"))()
-    end)
-end)
-bMSX.BackgroundColor3 = Color3.fromRGB(0, 100, 0) -- Warna Hijau Gelap biar beda
+bMSX.BackgroundColor3 = Color3.fromRGB(0, 80, 0)
 
 btn("X", UDim2.new(1,-35,0,5), tgl).Size = UDim2.new(0,30,0,30)
 
@@ -170,6 +207,8 @@ run.RenderStepped:Connect(function()
     bF.Text="FOV: "..(fov and "ON" or "OFF"); bAf.Text="Anti-AFK: "..(afk and "ON" or "OFF")
     bE.Text="ESP Box: "..(esp and "ON" or "OFF"); bH.Text="ESP Health: "..(hp and "ON" or "OFF")
     bDw.Text="Del Wall (K): "..(dw and "ON" or "OFF")
+    bFrOn.Text="Friendlist: "..(showFr and "ON" or "OFF")
+    bFps.Text="Boost FPS: "..(fps and "ON" or "OFF")
 
     if drag then
         local pct = math.clamp((UIS:GetMouseLocation().X - sBg.AbsolutePosition.X)/sBg.AbsoluteSize.X, 0, 1)
@@ -201,7 +240,7 @@ run.RenderStepped:Connect(function()
     if aim then
         local target, close = nil, (fov and fov_r or 2000)
         for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= p and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+            if v ~= p and not friends[v.Name] and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
                 local part = v.Character:FindFirstChild("Head") or v.Character:FindFirstChild("HumanoidRootPart")
                 if part then
                     local pos, vis = cam:WorldToViewportPoint(part.Position)
@@ -230,7 +269,7 @@ local ldF = Instance.new("Frame", sg); ldF.Size, ldF.Position = UDim2.new(0,250,
 local ldB = Instance.new("Frame", ldF); ldB.Size, ldB.Position = UDim2.new(0,0,0,5), UDim2.new(0.1,0,0.7,0); ldB.BackgroundColor3 = Color3.new(1,0,0)
 task.spawn(function()
     for i=0,100,5 do ldB.Size=UDim2.new(i/100*0.8,0,0,5); task.wait(0.05) end
-    ldF:Destroy(); keyF.Visible = true
+    ldF:Destroy(); keyF.Visible = true; updateFriendList()
 end)
 
 -- [ FINAL INIT ]
@@ -247,7 +286,8 @@ end)
 
 UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag, d_fov = false end end)
 for _, v in pairs(game.Players:GetPlayers()) do createEsp(v) end
-game.Players.PlayerAdded:Connect(createEsp)
+game.Players.PlayerAdded:Connect(function(v) createEsp(v) if showFr then updateFriendList() end end)
 game.Players.PlayerRemoving:Connect(function(plr)
     if ESP_Cache[plr] then for _, o in pairs(ESP_Cache[plr]) do o:Remove() end ESP_Cache[plr] = nil end
+    if showFr then updateFriendList() end
 end)
