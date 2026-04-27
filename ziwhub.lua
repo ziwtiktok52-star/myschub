@@ -11,7 +11,7 @@ if oldGui then oldGui:Destroy() end
 
 -- [[ DAFTAR PASSWORD PREMIUM (WHITELIST) ]]
 local premiumKeys = {
-    ["ziwaganteng"] = true,
+    ["ziwagantengbanget"] = true,
     ["pembeli01"] = true,
     ["premium123"] = true
 }
