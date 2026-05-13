@@ -13,7 +13,7 @@ if oldGui then oldGui:Destroy() end
 local premiumKeys = {
     ["inipremium"] = true,
     ["bulanan"] = true,
-    ["gd"] = true
+    ["semz"] = true
     ["noneaaa"] = true,
     ["7hari"] = true,
 }
