@@ -14,6 +14,7 @@ local premiumKeys = {
     ["inipremium"] = true,
     ["bulanan"] = true,
     ["semz"] = true
+     ["tes"] = true
 }
 
 -- Variabel Fitur
