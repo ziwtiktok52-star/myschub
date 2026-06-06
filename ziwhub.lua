@@ -13,7 +13,7 @@ if oldGui then oldGui:Destroy() end
 local premiumKeys = {
     ["inipremium"] = true,
     ["bulanan"] = true,
-    ["semz"] = true
+    ["harian"] = true
 }
 
 -- Variabel Fitur
